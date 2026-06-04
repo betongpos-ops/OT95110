@@ -8,6 +8,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
 </head>
 <body>
 
@@ -61,6 +62,10 @@
         </svg>
         หน้าที่และอัตรากำลัง
       </button>
+      <button class="nav-item" data-page="report" onclick="navigate('report')">
+        <i class="fas fa-chart-bar fa-sm"></i>
+        รายงาน OT
+      </button>
     </nav>
   </aside>
 
@@ -99,6 +104,16 @@
       <div id="page-duties" class="page">
         <div id="duties-content"></div>
       </div>
+
+      <!-- OT Day Scheduling Page (accessed from calendar) -->
+      <div id="page-ot" class="page">
+        <div id="ot-content"></div>
+      </div>
+
+      <!-- Report Page -->
+      <div id="page-report" class="page">
+        <div id="report-content"></div>
+      </div>
     </div>
   </main>
 </div>
@@ -136,6 +151,10 @@
     </svg>
     <span>หน้าที่</span>
   </button>
+  <button class="bottom-nav-item" data-page="report" onclick="navigate('report')">
+    <i class="fas fa-chart-bar"></i>
+    <span>รายงาน</span>
+  </button>
 </nav>
 
 <!-- Modal -->
@@ -151,6 +170,8 @@
 
 <!-- Supabase JS v2 -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<!-- SheetJS — อ่าน/เขียน .xlsx -->
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script src="app.js"></script>
 </body>
 </html>
