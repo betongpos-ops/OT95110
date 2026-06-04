@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>ระบบจัดการล่วงเวลา</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div id="app">
+  <!-- SIDEBAR -->
+  <aside id="sidebar">
+    <div class="sidebar-header">
+      <div class="sidebar-logo">
+        <svg width="34" height="34" viewBox="0 0 34 34" fill="none">
+          <rect width="34" height="34" rx="8" fill="#c0392b"/>
+          <path d="M8 10h18v3H8zM8 15.5h12v3H8zM8 21h18v3H8z" fill="#fff"/>
+        </svg>
+        <div class="sidebar-brand">
+          ระบบจัดการล่วงเวลา
+          <small>OT Management</small>
+        </div>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <button class="nav-item active" data-page="calendar" onclick="navigate('calendar')">
+        <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <rect x="3" y="4" width="18" height="18" rx="2"/>
+          <line x1="16" y1="2" x2="16" y2="6"/>
+          <line x1="8" y1="2" x2="8" y2="6"/>
+          <line x1="3" y1="10" x2="21" y2="10"/>
+        </svg>
+        ปฏิทินปฏิบัติงาน
+      </button>
+      <button class="nav-item" data-page="employees" onclick="navigate('employees')">
+        <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+          <circle cx="9" cy="7" r="4"/>
+          <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+          <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+        </svg>
+        ข้อมูลพนักงาน
+      </button>
+      <button class="nav-item" data-page="holidays" onclick="navigate('holidays')">
+        <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <circle cx="12" cy="12" r="10"/>
+          <line x1="12" y1="8" x2="12" y2="12"/>
+          <line x1="12" y1="16" x2="12.01" y2="16"/>
+        </svg>
+        วันหยุดนักขัตฤกษ์
+      </button>
+      <button class="nav-item" data-page="duties" onclick="navigate('duties')">
+        <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <polyline points="9 11 12 14 22 4"/>
+          <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+        </svg>
+        หน้าที่และอัตรากำลัง
+      </button>
+    </nav>
+  </aside>
+
+  <div id="sidebar-overlay" onclick="closeSidebar()"></div>
+
+  <!-- MAIN -->
+  <main id="main">
+    <header id="topbar">
+      <button id="menu-toggle" onclick="toggleSidebar()" aria-label="เมนู">
+        <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <line x1="3" y1="6"  x2="21" y2="6"/>
+          <line x1="3" y1="12" x2="21" y2="12"/>
+          <line x1="3" y1="18" x2="21" y2="18"/>
+        </svg>
+      </button>
+      <span id="page-title">ปฏิทินปฏิบัติงาน</span>
+    </header>
+
+    <div id="content">
+      <!-- Calendar Page -->
+      <div id="page-calendar" class="page active">
+        <div id="calendar-content"></div>
+      </div>
+
+      <!-- Employees Page -->
+      <div id="page-employees" class="page">
+        <div id="emp-content"></div>
+      </div>
+
+      <!-- Holidays Page -->
+      <div id="page-holidays" class="page">
+        <div id="hol-content"></div>
+      </div>
+
+      <!-- Duties Page -->
+      <div id="page-duties" class="page">
+        <div id="duties-content"></div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- BOTTOM NAV (Mobile) -->
+<nav id="bottom-nav">
+  <button class="bottom-nav-item active" data-page="calendar" onclick="navigate('calendar')">
+    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+      <rect x="3" y="4" width="18" height="18" rx="2"/>
+      <line x1="16" y1="2" x2="16" y2="6"/>
+      <line x1="8" y1="2" x2="8" y2="6"/>
+      <line x1="3" y1="10" x2="21" y2="10"/>
+    </svg>
+    <span>ปฏิทิน</span>
+  </button>
+  <button class="bottom-nav-item" data-page="employees" onclick="navigate('employees')">
+    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+      <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+      <circle cx="9" cy="7" r="4"/>
+    </svg>
+    <span>พนักงาน</span>
+  </button>
+  <button class="bottom-nav-item" data-page="holidays" onclick="navigate('holidays')">
+    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+      <circle cx="12" cy="12" r="10"/>
+      <line x1="12" y1="8" x2="12" y2="12"/>
+      <line x1="12" y1="16" x2="12.01" y2="16"/>
+    </svg>
+    <span>วันหยุด</span>
+  </button>
+  <button class="bottom-nav-item" data-page="duties" onclick="navigate('duties')">
+    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+      <polyline points="9 11 12 14 22 4"/>
+      <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+    </svg>
+    <span>หน้าที่</span>
+  </button>
+</nav>
+
+<!-- Modal -->
+<div id="modal-overlay">
+  <div id="modal-box" class="modal"></div>
+</div>
+
+<!-- Toast -->
+<div id="toast-container"></div>
+
+<!-- Loading -->
+<div id="global-loading"><div class="spinner"></div></div>
+
+<!-- Supabase JS v2 -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="app.js"></script>
+</body>
+</html>
