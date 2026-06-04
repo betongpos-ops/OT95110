@@ -467,12 +467,16 @@ function renderEmployees() {
       const d = S.duties.find(x => x.id === id);
       return d ? esc(d.name) : esc(id);
     }).join(', ');
+    const workTime = emp.work_start && emp.work_end
+      ? esc(emp.work_start.slice(0,5)) + '–' + esc(emp.work_end.slice(0,5))
+      : '—';
     return `
       <tr>
         <td>${esc(emp.id)}</td>
         <td><strong>${esc(emp.first_name)} ${esc(emp.last_name)}</strong></td>
         <td>${esc(emp.position)}</td>
         <td>${esc(emp.day_off1)}${emp.day_off2 ? ', ' + esc(emp.day_off2) : ''}</td>
+        <td>${workTime}</td>
         <td><span class="badge ${emp.contract_type === 'จ้างเหมา' ? 'badge-contract' : ''}">${esc(emp.contract_type)}</span></td>
         <td>${dutyNames}</td>
         <td class="actions">
@@ -485,17 +489,32 @@ function renderEmployees() {
   document.getElementById('emp-content').innerHTML = `
     <div class="page-header">
       <h2>ข้อมูลพนักงาน (${S.employees.length} คน)</h2>
-      <button class="btn btn-primary" onclick="openEmpModal()">+ เพิ่มพนักงาน</button>
+      <div class="btn-group">
+        <button class="btn btn-outline" onclick="downloadTemplate()">
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+          </svg>
+          Template CSV
+        </button>
+        <button class="btn btn-outline" onclick="triggerImport()">
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
+          </svg>
+          นำเข้า CSV
+        </button>
+        <button class="btn btn-primary" onclick="openEmpModal()">+ เพิ่มพนักงาน</button>
+      </div>
     </div>
+    <input type="file" id="csv-file-input" accept=".csv" style="display:none" onchange="handleCSVFile(event)">
     <div class="search-bar">
       <input class="form-input" id="emp-search" placeholder="ค้นหาชื่อหรือรหัส..." oninput="filterTable('emp-table',this.value)">
     </div>
     <div class="table-wrap">
       <table class="data-table" id="emp-table">
         <thead>
-          <tr><th>รหัส</th><th>ชื่อ-นามสกุล</th><th>ตำแหน่ง</th><th>วันหยุด</th><th>ประเภท</th><th>หน้าที่</th><th></th></tr>
+          <tr><th>รหัส</th><th>ชื่อ-นามสกุล</th><th>ตำแหน่ง</th><th>วันหยุด</th><th>เวลาทำงาน</th><th>ประเภท</th><th>หน้าที่</th><th></th></tr>
         </thead>
-        <tbody>${rows || '<tr><td colspan="7" class="empty-state">ยังไม่มีข้อมูลพนักงาน</td></tr>'}</tbody>
+        <tbody>${rows || '<tr><td colspan="8" class="empty-state">ยังไม่มีข้อมูลพนักงาน</td></tr>'}</tbody>
       </table>
     </div>
   `;
@@ -571,6 +590,31 @@ function openEmpModal(id) {
               value="${emp ? emp.salary : 0}" style="max-width:200px">
           </div>
         </div>
+
+        <div class="form-section-label">เวลาทำงาน</div>
+        <div class="form-grid">
+          <div class="form-group">
+            <label>เวลาเริ่มงาน</label>
+            <input type="time" class="form-input" id="ef-work-start"
+              value="${emp && emp.work_start ? emp.work_start.slice(0,5) : '08:00'}">
+          </div>
+          <div class="form-group">
+            <label>เวลาเลิกงาน</label>
+            <input type="time" class="form-input" id="ef-work-end"
+              value="${emp && emp.work_end ? emp.work_end.slice(0,5) : '17:00'}">
+          </div>
+          <div class="form-group">
+            <label>เวลาพักเริ่ม</label>
+            <input type="time" class="form-input" id="ef-break-start"
+              value="${emp && emp.break_start ? emp.break_start.slice(0,5) : '12:00'}">
+          </div>
+          <div class="form-group">
+            <label>เวลาพักสิ้นสุด</label>
+            <input type="time" class="form-input" id="ef-break-end"
+              value="${emp && emp.break_end ? emp.break_end.slice(0,5) : '13:00'}">
+          </div>
+        </div>
+
         <div class="form-group">
           <label>หน้าที่ที่รับผิดชอบ</label>
           <div class="checkbox-group">
@@ -604,6 +648,10 @@ async function saveEmployee(e) {
     wage_type:     document.getElementById('ef-wage').value,
     salary:        parseFloat(document.getElementById('ef-salary').value) || 0,
     duties:        [...document.querySelectorAll('.duty-chk:checked')].map(c => c.value),
+    work_start:    document.getElementById('ef-work-start').value || '08:00',
+    work_end:      document.getElementById('ef-work-end').value   || '17:00',
+    break_start:   document.getElementById('ef-break-start').value || '12:00',
+    break_end:     document.getElementById('ef-break-end').value   || '13:00',
   };
 
   if (!data.id || !data.first_name || !data.last_name)
@@ -931,6 +979,157 @@ async function init() {
   } finally {
     showLoading(false);
   }
+}
+
+// ============================================================
+// CSV Import
+// ============================================================
+
+const CSV_HEADERS = [
+  'เลขประจำตัว','ชื่อ','นามสกุล','ตำแหน่ง',
+  'วันหยุด1','วันหยุด2','ประเภทพนักงาน',
+  'เงินเดือน','ประเภทค่าจ้าง',
+  'เวลาเริ่มงาน','เวลาเลิกงาน','พักเริ่ม','พักสิ้นสุด',
+  'หน้าที่(คั่นด้วย|)'
+];
+
+function triggerImport() {
+  document.getElementById('csv-file-input').value = '';
+  document.getElementById('csv-file-input').click();
+}
+
+function downloadTemplate() {
+  const sampleRow = ['001','สมชาย','ใจดี','พนักงานขับรถ',
+    'เสาร์','อาทิตย์','ปกติ','15000','รายเดือน',
+    '08:00','17:00','12:00','13:00','D001|D002'];
+  const bom  = '﻿';
+  const csv  = bom + CSV_HEADERS.join(',') + '\n' + sampleRow.join(',');
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href = url; a.download = 'template_employees.csv';
+  a.click(); URL.revokeObjectURL(url);
+}
+
+function handleCSVFile(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const rows = parseCSV(e.target.result);
+      if (rows.length === 0) { toast('ไฟล์ CSV ว่างเปล่า', 'error'); return; }
+      openImportModal(rows);
+    } catch(err) { toast('อ่านไฟล์ไม่สำเร็จ: ' + err.message, 'error'); }
+  };
+  reader.readAsText(file, 'UTF-8');
+}
+
+function parseCSV(text) {
+  const lines = text.replace(/\r\n/g,'\n').replace(/\r/g,'\n').trim().split('\n');
+  if (lines.length < 2) return [];
+  // skip header row
+  return lines.slice(1).filter(l => l.trim()).map(line => {
+    // simple CSV parse — handles quoted fields
+    const fields = [];
+    let cur = '', inQ = false;
+    for (let i = 0; i < line.length; i++) {
+      const ch = line[i];
+      if (ch === '"') { inQ = !inQ; continue; }
+      if (ch === ',' && !inQ) { fields.push(cur.trim()); cur = ''; continue; }
+      cur += ch;
+    }
+    fields.push(cur.trim());
+    return {
+      id:            fields[0]  || '',
+      first_name:    fields[1]  || '',
+      last_name:     fields[2]  || '',
+      position:      fields[3]  || '',
+      day_off1:      fields[4]  || '',
+      day_off2:      fields[5]  || '',
+      contract_type: fields[6]  || 'ปกติ',
+      salary:        parseFloat(fields[7]) || 0,
+      wage_type:     fields[8]  || 'รายเดือน',
+      work_start:    fields[9]  || '08:00',
+      work_end:      fields[10] || '17:00',
+      break_start:   fields[11] || '12:00',
+      break_end:     fields[12] || '13:00',
+      duties:        fields[13] ? fields[13].split('|').map(s => s.trim()).filter(Boolean) : [],
+    };
+  }).filter(r => r.id);
+}
+
+function openImportModal(rows) {
+  const existing = new Set(S.employees.map(e => e.id));
+  const newRows  = rows.filter(r => !existing.has(r.id));
+  const dupRows  = rows.filter(r => existing.has(r.id));
+
+  const previewHtml = rows.slice(0, 20).map(r => `
+    <tr class="${existing.has(r.id) ? 'row-dup' : ''}">
+      <td>${esc(r.id)}</td>
+      <td>${esc(r.first_name)} ${esc(r.last_name)}</td>
+      <td>${esc(r.position)}</td>
+      <td>${esc(r.work_start)}–${esc(r.work_end)}</td>
+      <td>${existing.has(r.id) ? '<span class="badge badge-contract">ซ้ำ</span>' : '<span class="badge badge-type-nat">ใหม่</span>'}</td>
+    </tr>`).join('');
+
+  const html = `
+    <div class="modal-header">
+      <h3>ตรวจสอบข้อมูลก่อนนำเข้า</h3>
+      <button class="btn-close" onclick="closeModal()">&#215;</button>
+    </div>
+    <div class="modal-body">
+      <div class="import-summary">
+        <div class="import-stat">
+          <span class="import-stat-num">${rows.length}</span>
+          <span>รายการทั้งหมด</span>
+        </div>
+        <div class="import-stat import-stat-new">
+          <span class="import-stat-num">${newRows.length}</span>
+          <span>จะเพิ่มใหม่</span>
+        </div>
+        <div class="import-stat import-stat-dup">
+          <span class="import-stat-num">${dupRows.length}</span>
+          <span>รหัสซ้ำ (ข้าม)</span>
+        </div>
+      </div>
+      ${rows.length > 20 ? `<p class="text-muted" style="font-size:13px;margin-bottom:8px">แสดง 20 รายการแรก (ทั้งหมด ${rows.length} รายการ)</p>` : ''}
+      <div class="table-wrap" style="max-height:300px;overflow-y:auto">
+        <table class="data-table">
+          <thead><tr><th>รหัส</th><th>ชื่อ-นามสกุล</th><th>ตำแหน่ง</th><th>เวลางาน</th><th>สถานะ</th></tr></thead>
+          <tbody>${previewHtml}</tbody>
+        </table>
+      </div>
+      <div class="form-actions">
+        <button class="btn btn-secondary" onclick="closeModal()">ยกเลิก</button>
+        <button class="btn btn-primary" onclick="executeImport()" ${newRows.length === 0 ? 'disabled' : ''}>
+          นำเข้า ${newRows.length} รายการ
+        </button>
+      </div>
+    </div>`;
+
+  // store pending rows in closure-accessible var
+  window._importRows = newRows;
+  openModal(html, true);
+}
+
+async function executeImport() {
+  const rows = window._importRows || [];
+  if (!rows.length) { toast('ไม่มีรายการที่จะนำเข้า', 'error'); return; }
+
+  showLoading(true);
+  try {
+    const { error } = await db.from('employees').insert(rows);
+    if (error) throw error;
+
+    const { data: all, error: e2 } = await db.from('employees').select('*').order('id');
+    if (e2) throw e2;
+    S.employees = all;
+    toast('นำเข้าสำเร็จ ' + rows.length + ' รายการ');
+    closeModal();
+    renderEmployees();
+  } catch(e) { toast('นำเข้าล้มเหลว: ' + e.message, 'error'); }
+  finally    { showLoading(false); }
 }
 
 init();

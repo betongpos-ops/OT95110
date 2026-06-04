@@ -663,6 +663,79 @@ body {
 }
 
 /* ============================================================
+   Button group (header actions)
+   ============================================================ */
+
+.btn-group {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.btn-outline {
+  background: transparent;
+  border: 1.5px solid var(--border);
+  color: var(--text);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.btn-outline:hover { border-color: var(--primary); color: var(--primary); background: rgba(192,57,43,0.04); }
+
+/* ============================================================
+   Form section label (divider within modal)
+   ============================================================ */
+
+.form-section-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  padding: 6px 0 2px;
+  border-top: 1px solid var(--border);
+  margin: 8px 0 4px;
+}
+
+/* ============================================================
+   Import preview
+   ============================================================ */
+
+.import-summary {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.import-stat {
+  flex: 1;
+  min-width: 80px;
+  padding: 12px 16px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  text-align: center;
+}
+
+.import-stat-num {
+  display: block;
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 1.1;
+  margin-bottom: 4px;
+}
+
+.import-stat-new { border-color: #a8d5b5; background: #f0faf3; }
+.import-stat-new .import-stat-num { color: var(--success); }
+
+.import-stat-dup { border-color: #f5c6c6; background: #fff5f5; }
+.import-stat-dup .import-stat-num { color: var(--danger); }
+
+tr.row-dup td { color: var(--text-muted); background: #fafafa; }
+
+/* ============================================================
    Responsive — Mobile
    ============================================================ */
 
